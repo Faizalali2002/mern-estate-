@@ -1,12 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
-
+import testRouter from "./routes/test.route.js";
 dotenv.config();
 
 connectDB();
 
 const app = express();
+
+app.use("/api/v1/test", testRouter);
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
