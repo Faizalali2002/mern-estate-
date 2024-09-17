@@ -4,11 +4,11 @@ export const signUpcontroller = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email: req.body.email });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(401).send({
         success: false,
-        message: `User Already Exists`,
+        message: `User with email ${email} already exists`,
       });
     }
 
