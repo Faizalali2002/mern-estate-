@@ -23,3 +23,13 @@ app.listen(PORT, () => {
     `⚙️  Server is running in ${process.env.DEV_MODE} mode at port : ${process.env.PORT}`
   );
 });
+
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  return res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message,
+  });
+});
