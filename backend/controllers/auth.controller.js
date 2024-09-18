@@ -62,6 +62,7 @@ export const signIncontroller = async (req, res) => {
     res
       .cookie("access_token", token, { httpOnly: true })
       .status(200)
+
       .json(rest);
   } catch (error) {
     console.log(error);
