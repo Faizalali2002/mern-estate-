@@ -47,3 +47,33 @@ export const updateUser = async (req, res, next) => {
     });
   }
 };
+
+export const deleteUserController = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).send({
+        success: false,
+        message: "User not Found",
+      });
+    }
+
+    await User.findByIdAndDelete(userId);
+    res.clearCookie("access_token");
+
+    return res.status(200).send({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error deleting user",
+      error: error.message,
+    });
+  }
+};
