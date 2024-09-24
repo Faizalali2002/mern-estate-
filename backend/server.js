@@ -7,6 +7,7 @@ import connectDB from "./db/index.js";
 import testRouter from "./routes/test.route.js";
 import authRouter from "./routes/auth.route.js";
 import userRouter from "./routes/user.route.js";
+import listingRouter from "./routes/listing.route.js";
 
 // Load environment variables
 dotenv.config();
@@ -31,8 +32,11 @@ app.use("/api/v1/auth", authRouter);
 //User routes
 app.use("/api/v1/user", userRouter);
 
+//Listing routes
+app.use("/api/v1/listing", listingRouter);
+
 // Port configuration
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5000;
 
 // Start the server
 app.listen(PORT, () => {
