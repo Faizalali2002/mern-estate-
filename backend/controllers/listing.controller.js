@@ -14,7 +14,7 @@ export const createListingController = async (req, res, next) => {
     return res.status(500).send({
       success: false,
       message: "Error creating listing",
-      error: error.message, // Send error message for debugging
+      error: error.message,
     });
   }
 };
