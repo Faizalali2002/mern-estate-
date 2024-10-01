@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Listing } from "../models/listing.model.js";
 import bcrypt from "bcryptjs";
 
 export const updateUser = async (req, res, next) => {
@@ -73,6 +74,37 @@ export const deleteUserController = async (req, res, next) => {
     return res.status(500).send({
       success: false,
       message: "Error deleting user",
+      error: error.message,
+    });
+  }
+};
+
+export const getUserListing = async (req, res) => {
+  try {
+    if (req.user.id !== req.params.id) {
+      return res.status(403).send({
+        success: false,
+        message: "You are not authorized to view these listings",
+      });
+    }
+
+    const listings = await Listing.find({ userRef: req.params.id });
+    if (!listings || listings.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No listings found for this user",
+      });
+    }
+    return res.status(200).send({
+      success: true,
+      message: "User listings retrieved successfully",
+      listings,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error retrieving user listings",
       error: error.message,
     });
   }
