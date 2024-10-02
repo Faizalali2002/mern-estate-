@@ -18,3 +18,31 @@ export const createListingController = async (req, res, next) => {
     });
   }
 };
+
+export const deleteListingController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const listing = await Listing.findByIdAndDelete(id);
+
+    if (!listing) {
+      return res.status(404).send({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    return res.status(200).send({
+      success: true,
+      message: "Listing deleted successfully",
+      listing,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error deleting listing",
+      error: error.message,
+    });
+  }
+};
