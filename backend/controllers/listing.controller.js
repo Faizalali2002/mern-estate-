@@ -46,3 +46,33 @@ export const deleteListingController = async (req, res, next) => {
     });
   }
 };
+
+export const updateListingController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const updatedListing = await Listing.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    if (!updatedListing) {
+      return res.status(404).send({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    return res.status(200).send({
+      success: true,
+      message: "Listing updated successfully",
+      listing: updatedListing,
+    });
+  } catch (error) {
+    console.log("error : ", error);
+    return res.status(500).send({
+      success: false,
+      message: "Error updating listing",
+      error: error.message,
+    });
+  }
+};
