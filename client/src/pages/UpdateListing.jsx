@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   getDownloadURL,
@@ -7,13 +7,14 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const CreateListing = () => {
+const UpdateListing = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [files, setFiles] = useState([]);
   console.log(files);
   const navigate = useNavigate();
+  const params = useParams();
 
   const [formData, setFormData] = useState({
     imageUrls: [],
@@ -34,10 +35,38 @@ const CreateListing = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  console.log(formData);
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      const listingId = params.listingId;
+      console.log(listingId);
+      try {
+        const res = await fetch(`/api/v1/listing/get/${listingId}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          console.error(data.message);
+          setError(data.message);
+          return;
+        }
+
+        setFormData((prevData) => ({
+          ...prevData,
+          ...data.listing,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch listing", error);
+      }
+    };
+
+    fetchListing();
+  }, [params.listingId]);
 
   const handleImageSubmit = (e) => {
-    if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
+    if (
+      files.length > 0 &&
+      files.length + (formData.imageUrls?.length || 0) < 7
+    ) {
       setUploading(true);
       setImageUploadError(false);
       const promises = [];
@@ -140,7 +169,7 @@ const CreateListing = () => {
       }
       setLoading(true);
       setError(false);
-      const res = await fetch("/api/v1/listing/create", {
+      const res = await fetch(`/api/v1/listing/update/${params.listingId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,19 +181,27 @@ const CreateListing = () => {
       });
       const data = await res.json();
       setLoading(false);
-      if (data?.success == true) {
-        navigate(`/update-listing/${data.listing._id}`);
-        console.log("id", data);
+
+      if (!data.success) {
+        return setError(data.message); // Handle API errors
+      }
+
+      // Check if data._id is present before navigating
+      if (data.listing._id) {
+        navigate(`/listing/${data.listing._id}`);
+      } else {
+        setError("Listing ID not returned. Please try again.");
       }
     } catch (error) {
       setError(error.message);
       setLoading(false);
     }
   };
+
   return (
     <main className="p-3 max-w-4xl mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">
-        Create a Listing
+        Update a Listing
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
         <div className="flex flex-col gap-4 flex-1">
@@ -177,7 +214,7 @@ const CreateListing = () => {
             minLength="10"
             required
             onChange={handleChange}
-            value={formData.name}
+            value={formData.name || ""}
           />
           <textarea
             type="text"
@@ -224,7 +261,7 @@ const CreateListing = () => {
                 id="parking"
                 className="w-5"
                 onChange={handleChange}
-                value={formData.parking}
+                checked={formData.parking}
               />
               <span>Parking Spot</span>
             </div>
@@ -234,7 +271,7 @@ const CreateListing = () => {
                 id="furnished"
                 className="w-5"
                 onChange={handleChange}
-                value={formData.furnished}
+                checked={formData.furnished}
               />
               <span>Furnished</span>
             </div>
@@ -322,7 +359,8 @@ const CreateListing = () => {
           </p>
           <div className="flex gap-4">
             <input
-              onChange={(e) => setFiles(e.target.files)}
+              onChange={(e) => setFiles(Array.from(e.target.files) || [])}
+              // onChange={(e) => setFiles(e.target.files)}
               type="file"
               id="images"
               accept="image/*"
@@ -342,7 +380,7 @@ const CreateListing = () => {
           <p className="text-red-700 text-sm">
             {imageUploadError && imageUploadError}
           </p>
-          {formData.imageUrls.length > 0 &&
+          {formData.imageUrls?.length > 0 &&
             formData.imageUrls.map((url, index) => (
               <div
                 key={index}
@@ -366,7 +404,7 @@ const CreateListing = () => {
             disabled={loading || uploading}
             className="p-3 bg-slate-700 text-white rounded-lg hover:opacity-95 disabled:opacity-85"
           >
-            {loading ? "Creating..." : "Create Listing"}
+            {loading ? "Updating..." : "Update Listing"}
           </button>
           {error && <p className="text-red-700 text-sm">{error}</p>}
         </div>
@@ -375,4 +413,4 @@ const CreateListing = () => {
   );
 };
 
-export default CreateListing;
+export default UpdateListing;
